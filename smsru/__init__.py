@@ -1,12 +1,12 @@
-# encoding=utf-8
-import hashlib
-import os
+# -*- coding: utf-8 _-*-
 import time
-import urllib
 import urllib2
+import urllib
+import hashlib
 
-from conf import api_id,password,login,sender
+from smsru.exceptions import NotConfigured,WrongKey,InternalError,Unavailable
 
+__version__ = '0.0.1'
 
 SEND_STATUS = {
     100: "Message accepted",
@@ -38,32 +38,26 @@ COST_STATUS = {
     100: "Success"
 }
 
-class NotConfigured(Exception):
-    pass
-
-
-class WrongKey(Exception):
-    pass
-
-
-class InternalError(Exception):
-    pass
-
-
-class Unavailable(Exception):
-    pass
 
 
 class SmsClient(object):
-    def _get_sign(self):
-        return  hashlib.md5(self._password +self._token).hexdigest()
     def __init__(self,api_id,login,password,sender=''):
+        """
+
+        Parameters::
+            key : user API key
+            host : base URL for queries
+            version : API version for working
+            register_views : send information to stats server about a firm profile viewing
+        """
         self.api_id = api_id
         self._password = password
         self.login  = login
         self._token = None
         self.sender = sender
         self._token_ts = 0
+    def _get_sign(self):
+        return  hashlib.md5(self._password +self._token).hexdigest()
 
     def _call(self, method, args={}):
         args["api_id"] = self.api_id
@@ -88,15 +82,6 @@ class SmsClient(object):
             raise NotConfigured("Wrong password")
         return res
 
-    def send(self,to,text,test=False):
-        return self._call('sms/send',{'to':to,'text':text,'test':test})
-
-    def balance(self):
-        return self._call('my/balance')
-
-    def limit(self):
-        return self._call('my/limit')
-
     def _get_token(self):
         """Returns a token.  Refreshes it if necessary."""
         if self._token_ts < time.time() - 500:
@@ -106,6 +91,16 @@ class SmsClient(object):
             self._token_ts = time.time()
         return self._token
   
+    def send(self,to,text,test=False):
+        return self._call('sms/send',{'to':to,'text':text,'test':test})
+
+    def balance(self):
+        return self._call('my/balance')
+
+    def limit(self):
+        return self._call('my/limit')
+
+
     def token(self):
         """Returns a token."""
         url = "http://sms.ru/auth/get_token"
@@ -126,11 +121,3 @@ class SmsClient(object):
             res.extend([None, None])
         return [res[0], COST_STATUS.get(int(res[0]), "Unknown status"), res[1], res[2]]
 
-if __name__=='__main__':
-	s = SmsClient(api_id,login,password,sender)
-	print s.send('71111111111',u'test sms',test=True)
-	print s.balance()
-	print s.limit()
-	print s.token()
-	print s.cost('71111111111','test sms')
-	print s.status('000000-0000000')
