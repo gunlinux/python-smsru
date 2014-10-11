@@ -1,18 +1,36 @@
-#sms lib for sms.ru api
-based on https://github.com/umonkey/smsru-client	
+# python-smsru
 
+A Python library for accessing the sms.ru API (http://sms.ru/?panel=api).
 
+Based on https://github.com/umonkey/smsru-client
 
-s = SmsClient(api_id,login,password,sender)
+## Versioning and API stability
 
-print s.send('71111111111',u'test sms',test=True)
+API stability isn't guaranteed before **1.3** version. Library version always will match sms.ru API version.
 
-print s.balance()
+Library coverage 50% of sms.ru API.
 
-print s.limit()
+## Usage
 
-print s.token()
+### Example
 
-print s.cost('71111111111','test sms')
+    import smsru
 
-print s.status('000000-0000000')
+    client = smsru.SmsClient(api_id,login,password,sender)
+
+	print s.send('71111111111',u'test sms',test=True)
+
+	print s.balance()
+
+	print s.limit()
+
+	print s.token()
+
+	print s.cost('71111111111','test sms')
+
+	print s.status('000000-0000000')
+
+## Contributing
+
+If you want to contribute, follow the [pep8](http://www.python.org/dev/peps/pep-0008/) guideline.
+
