@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 class NotConfigured(Exception):
     pass
 
@@ -16,4 +15,3 @@ class InternalError(Exception):
 
 class Unavailable(Exception):
     pass
-

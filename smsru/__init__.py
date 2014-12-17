@@ -66,7 +66,7 @@ class SmsClient(object):
             args['token']= self._get_token()
             args['sig'] = self._get_sign()
             del args["api_id"]
-        if self.sender<>'':
+        if self.sender!='':
             args['from'] = self.sender
         url = "http://sms.ru/%s?%s" % (method, urllib.urlencode(args))
         res = urllib2.urlopen(url).read().strip().split("\n")
@@ -90,9 +90,11 @@ class SmsClient(object):
             self._token = self.token()
             self._token_ts = time.time()
         return self._token
-  
+
     def send(self,to,text,test=False):
-        return self._call('sms/send',{'to':to,'text':text,'test':test})
+        if test:
+            return self._call('sms/send',{'to':to,'text':text,'test':'test'})
+        return self._call('sms/send',{'to':to,'text':text})
 
     def balance(self):
         return self._call('my/balance')
@@ -106,7 +108,7 @@ class SmsClient(object):
         url = "http://sms.ru/auth/get_token"
         res = urllib2.urlopen(url).read().strip().split("\n")
         return res[0]
-  
+
     def status(self, msgid):
         """Returns message status."""
         res = self._call('my/balance',{"id":msgid})
