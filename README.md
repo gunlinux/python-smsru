@@ -1,4 +1,5 @@
 [![Code Health](https://landscape.io/github/gunlinux/python-smsru/master/landscape.svg?style=flat)](https://landscape.io/github/gunlinux/python-smsru/master)
+[![Build Status](https://travis-ci.org/gunlinux/python-smsru.svg?branch=master)](https://travis-ci.org/gunlinux/python-smsru)
 
 # python-smsru
 
@@ -8,9 +9,7 @@ Based on https://github.com/umonkey/smsru-client
 
 ## Versioning and API stability
 
-API stability isn't guaranteed before **1.3** version. Library version always will match sms.ru API version.
-
-Library coverage 50% of sms.ru API.
+Library coverage not all of sms.ru API.
 
 ## Usage
 
@@ -18,21 +17,24 @@ Library coverage 50% of sms.ru API.
 
     import smsru
 
-    client = smsru.SmsClient(api_id,login,password,sender)
+    api = smsru.SmsClient(api_id,login,password,sender)
 
-	print s.send('71111111111',u'test sms',test=True)
+	print api.send('71111111111',u'test sms',test=True)
 
-	print s.balance()
+	print api.balance()
 
-	print s.limit()
+	print api.limit()
 
-	print s.token()
+	print api.token()
 
-	print s.cost('71111111111','test sms')
+	print api.cost('71111111111','test sms')
 
-	print s.status('000000-0000000')
+	print api.status('000000-0000000')
+
 
 ## Contributing
+
+	python setup.py test
 
 If you want to contribute, follow the [pep8](http://www.python.org/dev/peps/pep-0008/) guideline.
 
