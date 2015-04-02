@@ -1,3 +1,5 @@
+[![Code Health](https://landscape.io/github/gunlinux/python-smsru/master/landscape.svg?style=flat)](https://landscape.io/github/gunlinux/python-smsru/master)
+
 # python-smsru
 
 A Python library for accessing the sms.ru API (http://sms.ru/?panel=api).
