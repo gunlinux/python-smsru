@@ -1,12 +1,13 @@
-# -*- coding: utf-8 _-*-
+""" http://sms.ru/?panel=api. """
+
 import time
 import urllib2
 import urllib
 import hashlib
 
-from smsru.exceptions import NotConfigured,WrongKey,InternalError,Unavailable
+from .exceptions import SmsruError
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 SEND_STATUS = {
     100: "Message accepted",
@@ -39,51 +40,67 @@ COST_STATUS = {
 }
 
 
-
 class SmsClient(object):
-    def __init__(self,api_id,login,password,sender=''):
+
+    """sms.ru API."""
+
+    def __init__(self, api_id, login, password, sender=None):
         """
 
+        Init of api.
+
         Parameters::
-            key : user API key
-            host : base URL for queries
-            version : API version for working
-            register_views : send information to stats server about a firm profile viewing
+            api_id : API key
+            login : user login
+            password : user password
+            sender : user default sender
         """
         self.api_id = api_id
         self._password = password
-        self.login  = login
+        self.login = login
         self._token = None
         self.sender = sender
         self._token_ts = 0
-    def _get_sign(self):
-        return  hashlib.md5(self._password +self._token).hexdigest()
 
-    def _call(self, method, args={}):
+    @classmethod
+    def token(cls):
+        """Return a token."""
+        url = "http://sms.ru/auth/get_token"
+        res = urllib2.urlopen(url).read().strip().split("\n")
+        return res[0]
+
+    def _get_sign(self):
+        """ helper for token auth """
+        return hashlib.md5(self._password + self._token).hexdigest()
+
+    def _call(self, method, args=None):
+        """ Main helper """
+        if args is None:
+            args = {}
         args["api_id"] = self.api_id
-        if method in ("sms/send", "sms/cost",'sms/balance'):
-            args['login']=self.login
-            args['token']= self._get_token()
+        if method in ("sms/send", "sms/cost", 'sms/balance'):
+            args['login'] = self.login
+            args['token'] = self._get_token()
             args['sig'] = self._get_sign()
             del args["api_id"]
-        if self.sender!='':
+        if self.sender:
             args['from'] = self.sender
         url = "http://sms.ru/%s?%s" % (method, urllib.urlencode(args))
         res = urllib2.urlopen(url).read().strip().split("\n")
         if res[0] == "200":
-            raise WrongKey("The supplied API key is wrong")
+            raise SmsruError(200, "The supplied API key is wrong")
         elif res[0] == "210":
-            raise InternalError("GET used when POST must have been")
+            raise SmsruError(210, "GET used when POST must have been")
         elif res[0] == "211":
-            raise InternalError("Unknown method")
+            raise SmsruError(211, "Unknown method")
         elif res[0] == "220":
-            raise Unavailable("The service is temporarily unavailable")
+            raise SmsruError(220, "The service is temporarily unavailable")
         elif res[0] == "301":
-            raise NotConfigured("Wrong password")
+            raise SmsruError(301, "Wrong password")
         return res
 
     def _get_token(self):
-        """Returns a token.  Refreshes it if necessary."""
+        """Return a token.  Refreshes it if necessary."""
         if self._token_ts < time.time() - 500:
             self._token = None
         if self._token is None:
@@ -91,35 +108,40 @@ class SmsClient(object):
             self._token_ts = time.time()
         return self._token
 
-    def send(self,to,text,test=False):
-        if test:
-            return self._call('sms/send',{'to':to,'text':text,'test':'test'})
-        return self._call('sms/send',{'to':to,'text':text})
+    def send(self, number, text, test=None):
+        """ http://sms.ru/?panel=api&subpanel=method&show=sms/send """
+        if test is None:
+            return self._call('sms/send', {'to': number, 'text': text})
+        return self._call('sms/send', {'to': number, 'text': text, 'test': 1})
 
     def balance(self):
+        """ http://sms.ru/?panel=api&subpanel=method&show=my/balance """
         return self._call('my/balance')
 
     def limit(self):
+        """ http://sms.ru/?panel=api&subpanel=method&show=my/limit """
         return self._call('my/limit')
 
-
-    def token(self):
-        """Returns a token."""
-        url = "http://sms.ru/auth/get_token"
-        res = urllib2.urlopen(url).read().strip().split("\n")
-        return res[0]
-
     def status(self, msgid):
-        """Returns message status."""
-        res = self._call('my/balance',{"id":msgid})
+        """
+            Return message status.
+
+            http://sms.ru/?panel=api&subpanel=method&show=sms/status
+        """
+        res = self._call('my/balance', {"id": msgid})
         code = int(res[0])
         text = STATUS_STATUS.get(code, "Unknown status")
         return [res[0], text]
 
-    def cost(self, to, message):
-        """Prints the cost of the message."""
-        res = self._call('sms/cost',{"to": to, "text": message.encode("utf-8")})
+    def cost(self, number, message):
+        """
+            Prints the cost of the message.
+
+            http://sms.ru/?panel=api&subpanel=method&show=sms/cost
+        """
+        res = self._call(
+            'sms/cost', {"to": number, "text": message.encode("utf-8")})
         if res[0] != "100":
             res.extend([None, None])
-        return [res[0], COST_STATUS.get(int(res[0]), "Unknown status"), res[1], res[2]]
-
+        return [res[0], COST_STATUS.get(int(res[0]), "Unknown status"),
+                res[1], res[2]]

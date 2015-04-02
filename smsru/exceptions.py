@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
+"""
+    Custom Exception
+"""
 
 
-class NotConfigured(Exception):
-    pass
+class SmsruError(Exception):
 
+    """2Gis API error"""
 
-class WrongKey(Exception):
-    pass
+    def __init__(self, code, message):
+        Exception.__init__(self)
+        self.code = code
+        self.message = message
 
-
-class InternalError(Exception):
-    pass
-
-
-class Unavailable(Exception):
-    pass
+    def __str__(self):
+        return self.message
