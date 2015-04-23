@@ -20,6 +20,7 @@ setup(
     long_description=__doc__,
     license='GPL',
     packages=find_packages(),
+    test_suite='tests',
     classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
