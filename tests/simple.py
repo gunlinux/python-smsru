@@ -3,6 +3,7 @@ try:
 except ImportError:
     import unittest
 import smsru
+import os
 
 
 class SimpleTest(unittest.TestCase):
@@ -27,3 +28,15 @@ class SimpleTest(unittest.TestCase):
             api.cost('79243965212', u'test sms')
         with self.assertRaises(smsru.SmsruError):
             api.status('000000-0000000')
+
+    def test_right_data(self):
+        sms_api = os.environ.get('SMS_API_ID')
+        sms_login = os.environ.get('SMS_LOGIN')
+        sms_password = os.environ.get('SMS_PASSWORD')
+        api = smsru.SmsClient(sms_api, sms_login, sms_password)
+        api.limit()
+        api.send('79834206359', u'tessms', test=True)
+        status = api.send('79834206359', u'tessms')
+        api.balance()
+        api.cost('79243965212', u'test sms')
+        api.status(status)

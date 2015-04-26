@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='smsru',
-    version='0.0.1',
+    version='0.0.2',
     author='gunlinux',
     author_email='gunlinux@ya.ru',
     url='https://github.com/gunlinux/python-smsru',
@@ -28,6 +28,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Software Development :: Libraries',
     ),

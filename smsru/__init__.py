@@ -1,10 +1,8 @@
 """ http://sms.ru/?panel=api. """
 
 import time
-import urllib2
-import urllib
 import hashlib
-
+import requests
 from .exceptions import SmsruError
 
 __version__ = '0.0.2'
@@ -66,12 +64,12 @@ class SmsClient(object):
     def token(cls):
         """Return a token."""
         url = "http://sms.ru/auth/get_token"
-        res = urllib2.urlopen(url).read().strip().split("\n")
+        res = requests.get(url).text.strip().split("\n")
         return res[0]
 
     def _get_sign(self):
         """ helper for token auth """
-        return hashlib.md5(self._password + self._token).hexdigest()
+        return hashlib.md5(self._password.encode('utf-8') + self._token.encode('utf-8')).hexdigest()
 
     def _call(self, method, args=None):
         """ Main helper """
@@ -85,8 +83,9 @@ class SmsClient(object):
             del args["api_id"]
         if self.sender:
             args['from'] = self.sender
-        url = "http://sms.ru/%s?%s" % (method, urllib.urlencode(args))
-        res = urllib2.urlopen(url).read().strip().split("\n")
+
+        url = "http://sms.ru/%s" % method
+        res = requests.get(url, params=args).text.split("\n")
         if res[0] == "200":
             raise SmsruError(200, "The supplied API key is wrong")
         elif res[0] == "210":
