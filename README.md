@@ -12,6 +12,7 @@ Based on https://github.com/umonkey/smsru-client
 Library coverage not all of sms.ru API.
 
 ## Usage
+pip install requests
 
 ### Example
 

@@ -1,5 +1,7 @@
 *.pyc
 virtua
+venv
+config.sh
 test.py
 *.py[co]
 local
