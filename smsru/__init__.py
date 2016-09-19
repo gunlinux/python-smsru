@@ -153,6 +153,7 @@ class SmsClient(object):
         return [res[0], COST_STATUS.get(int(res[0]), "Unknown status"),
                 res[1], res[2]]
 
+
 class SmsApiMethod:
     def __init__(self, api, method=None):
         self._api = api
@@ -167,4 +168,3 @@ class SmsApiMethod:
 
     def __call__(self, *args, **kwargs):
         return self._api.call(self._method, kwargs)
-

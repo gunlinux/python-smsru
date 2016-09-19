@@ -32,4 +32,7 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Software Development :: Libraries',
     ),
+    install_requires=[
+        'requests',
+        ]
 )
