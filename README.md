@@ -11,31 +11,64 @@ Based on https://github.com/umonkey/smsru-client
 
 Library coverage not all of sms.ru API.
 
-## Usage
+## Dependencies
 pip install requests
+
+## Installation
+python setup.py install
+
+Note: installation from PyPI coming soon :)
+
+## Usage
+
+First of all you need to import this library:
+```python
+import smsru
+```
+
+In version 0.0 you can use limited group of API methods:
+```python
+sms_api = smsru.SmsClient(api_id, login, password, sender)
+
+print sms_api.send("+71234567890", u'sms text', test=True)
+```
+and so on with balance/limit/token/cost/status methods.
+
+In current version you can use all API methods, but the usage is little bit different:
+Now you need to get api-object that is a chain between you and sms.ru:
+```python
+sms_client = smsru.SmsClient(api_id)
+sms_api = sms_client.get_api()
+```
+You also can see, that only api_id parameter is now required, because it's enough to authorize
+
+When you got your api-object, you can get access to any sms.ru API this way:
+```python
+sms_api.sms.send(to='+71234567890', text='Hello message.')
+#or
+sms_api.my.limit()
+```
+The structure of api-object is automatically generated to correspond the sms.ru API structure.
+For example to call /sms/\* methods, you can use methods of 'sms' api-object member.
+As you can see, api_id parameter(required by all API-methods) is substituted automatically.
+Other parameters are substituted to API-request with names you give them in methods call.
 
 ### Example
 
     import smsru
 
-    api = smsru.SmsClient(api_id,login,password,sender)
-
-	print api.send('71111111111',u'test sms',test=True)
-
-	print api.balance()
-
-	print api.limit()
-
-	print api.token()
-
-	print api.cost('71111111111','test sms')
-
-	print api.status('000000-0000000')
-
+    client = smsru.SmsClient(api_id,login,password,sender)
+    api = client.get_api()
+    sms_id = api.sms.send(to='+71234567890', text=u'Текст сообщения', translit=1)[1]
+    print(api.sms.status(sms_id))
+    print(api.my.balance())
 
 ## Contributing
 
+Please run tests before any pull-requests:
+```bash
 	python setup.py test
+```
 
 If you want to contribute, follow the [pep8](http://www.python.org/dev/peps/pep-0008/) guideline.
 
