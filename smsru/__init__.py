@@ -42,7 +42,7 @@ class SmsClient(object):
 
     """sms.ru API."""
 
-    def __init__(self, api_id, login, password, sender=None):
+    def __init__(self, api_id, login=None, password=None, sender=None):
         """
 
         Init of api.
@@ -76,7 +76,7 @@ class SmsClient(object):
         if args is None:
             args = {}
         args["api_id"] = self.api_id
-        if method in ("sms/send", "sms/cost", 'sms/balance'):
+        if method in ("sms/send", "sms/cost", 'sms/balance') and self.app_id is None:
             args['login'] = self.login
             args['token'] = self._get_token()
             args['sig'] = self._get_sign()
