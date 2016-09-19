@@ -60,6 +60,9 @@ class SmsClient(object):
         self.sender = sender
         self._token_ts = 0
 
+    def get_api(self):
+        return SmsApiMethod(self)
+
     @classmethod
     def token(cls):
         """Return a token."""
@@ -71,10 +74,14 @@ class SmsClient(object):
         """ helper for token auth """
         return hashlib.md5(self._password.encode('utf-8') + self._token.encode('utf-8')).hexdigest()
 
-    def _call(self, method, args=None):
+    def call(self, method, args=None):
         """ Main helper """
-        if args is None:
+
+        if args:
+            args = args.copy()
+        else:
             args = {}
+
         args["api_id"] = self.api_id
         if method in ("sms/send", "sms/cost", 'sms/balance') and self.api_id is None:
             args['login'] = self.login
@@ -85,6 +92,7 @@ class SmsClient(object):
             args['from'] = self.sender
 
         url = "http://sms.ru/%s" % method
+
         res = requests.get(url, params=args).text.split("\n")
         if res[0] == "200":
             raise SmsruError(200, "The supplied API key is wrong")
@@ -110,16 +118,16 @@ class SmsClient(object):
     def send(self, number, text, test=None):
         """ http://sms.ru/?panel=api&subpanel=method&show=sms/send """
         if test is None:
-            return self._call('sms/send', {'to': number, 'text': text})
-        return self._call('sms/send', {'to': number, 'text': text, 'test': 1})
+            return self.call('sms/send', {'to': number, 'text': text})
+        return self.call('sms/send', {'to': number, 'text': text, 'test': 1})
 
     def balance(self):
         """ http://sms.ru/?panel=api&subpanel=method&show=my/balance """
-        return self._call('my/balance')
+        return self.call('my/balance')
 
     def limit(self):
         """ http://sms.ru/?panel=api&subpanel=method&show=my/limit """
-        return self._call('my/limit')
+        return self.call('my/limit')
 
     def status(self, msgid):
         """
@@ -127,7 +135,7 @@ class SmsClient(object):
 
             http://sms.ru/?panel=api&subpanel=method&show=sms/status
         """
-        res = self._call('my/balance', {"id": msgid})
+        res = self.call('my/balance', {"id": msgid})
         code = int(res[0])
         text = STATUS_STATUS.get(code, "Unknown status")
         return [res[0], text]
@@ -138,9 +146,25 @@ class SmsClient(object):
 
             http://sms.ru/?panel=api&subpanel=method&show=sms/cost
         """
-        res = self._call(
+        res = self.call(
             'sms/cost', {"to": number, "text": message.encode("utf-8")})
         if res[0] != "100":
             res.extend([None, None])
         return [res[0], COST_STATUS.get(int(res[0]), "Unknown status"),
                 res[1], res[2]]
+
+class SmsApiMethod:
+    def __init__(self, api, method=None):
+        self._api = api
+        self._method = method
+
+    def __getattr__(self, method):
+        if self._method:
+            self._method += '/' + method
+            return self
+
+        return SmsApiMethod(self._api, method)
+
+    def __call__(self, *args, **kwargs):
+        return self._api.call(self._method, kwargs)
+
