@@ -12,12 +12,10 @@ Based on https://github.com/umonkey/smsru-client
 Library coverage not all of sms.ru API.
 
 ## Dependencies
-pip install requests
+This package is requires ```requests``` package. Dependencies should be installed automatically by pip.
 
 ## Installation
-python setup.py install
-
-Note: installation from PyPI coming soon :)
+pip install smsru
 
 ## Usage
 
